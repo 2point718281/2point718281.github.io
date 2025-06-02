@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Human Body Diagram</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            padding: 30px;
+            max-width: 800px;
+            width: 100%;
+        }
+
+        .diagram-container {
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 500px;
+        }
+
+        .person-image {
+            max-width: 300px;
+            max-height: 500px;
+            width: auto;
+            height: auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        .overlay-image {
+            position: absolute;
+            z-index: 2;
+        }
+
+        .brain-image {
+            width: 60px;
+            height: 60px;
+            top: 0%;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .heart-image {
+            width: 50px;
+            height: 50px;
+            top: 20%;
+            left: 52%;
+            transform: translateX(-50%);
+        }
+
+        .clickable-zone {
+            position: absolute;
+            z-index: 3;
+            cursor: pointer;
+            border: 2px solid transparent;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.1);
+            transform-origin: center center;
+        }
+
+        .clickable-zone:hover {
+            border-color: #4CAF50;
+            background: rgba(76, 175, 80, 0.2);
+            transform: scale(1.1);
+        }
+
+        .head-zone {
+            width: 80px;
+            height: 80px;
+            top: 0%;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .head-zone:hover {
+            transform: translateX(-50%) scale(1.1);
+        }
+
+        .heart-zone {
+            width: 70px;
+            height: 70px;
+            top: 18%;
+            left: 52%;
+            transform: translateX(-50%);
+        }
+
+        .heart-zone:hover {
+            transform: translateX(-50%) scale(1.1);
+        }
+
+        .left-hand-zone {
+            width: 70px;
+            height: 70px;
+            top: 50%;
+            left: 40%;
+            transform: translateX(-25%);
+        }
+
+        .left-hand-zone:hover {
+            transform: translateX(-25%) scale(1.1);
+        }
+
+        .right-hand-zone {
+            width: 70px;
+            height: 70px;
+            top: 50%;
+            right: 40%;
+            transform: translateX(25%);
+        }
+
+        .right-hand-zone:hover {
+            transform: translateX(25%) scale(1.1);
+        }
+
+        .details-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.3);
+            animation: modalSlideIn 0.3s ease-out;
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: translate(-50%, -60%);
+            }
+            to {
+                opacity: 1;
+                transform: translate(-50%, -50%);
+            }
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .modal-title {
+            color: #333;
+            margin: 0;
+            font-size: 1.8em;
+            font-weight: 600;
+        }
+
+        .close-btn {
+            background: #ff4757;
+            border: none;
+            color: white;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 18px;
+            font-weight: bold;
+            transition: all 0.2s ease;
+        }
+
+        .close-btn:hover {
+            background: #ff3742;
+            transform: scale(1.1);
+        }
+
+        .modal-body {
+            color: #555;
+            line-height: 1.6;
+        }
+
+        .modal-body p {
+            margin-bottom: 15px;
+        }
+
+        .modal-body blockquote {
+            background: #f8f9fa;
+            border-left: 4px solid #007bff;
+            margin: 15px 0;
+            padding: 10px 15px;
+            font-style: italic;
+        }
+
+        .modal-body ul {
+            padding-left: 20px;
+            margin-bottom: 15px;
+        }
+
+        .modal-body li {
+            margin-bottom: 8px;
+            padding: 5px 0;
+        }
+
+        .modal-body h3 {
+            color: #333;
+            margin-top: 20px;
+            margin-bottom: 10px;
+        }
+
+        .instructions {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #666;
+            font-size: 1.1em;
+        }
+
+        .title {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 2.2em;
+            font-weight: 700;
+        }
+
+        .zone-indicator {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="title">Character Diagram - Narrator for "To Every Thing There Is a Season"</h1>
+        <p class="instructions">Click on the head, heart, or hands to learn more!</p>
+        
+        <div class="diagram-container" id="diagramContainer">
+            <!-- Person image -->
+            <img src="person.jpg" alt="Human figure" class="person-image" id="personImage">
+            
+            <!-- Clickable zones -->
+            <div class="clickable-zone head-zone" onclick="openDetails('head')"></div>
+            <div class="zone-indicator" style="top: 8%; left: 50%; transform: translateX(-50%);">Head/Brain</div>
+            
+            <div class="clickable-zone heart-zone" onclick="openDetails('heart')"></div>
+            <div class="zone-indicator" style="top: 32%; left: 52%; transform: translateX(-50%);">Heart</div>
+            
+            <div class="clickable-zone left-hand-zone" onclick="openDetails('leftHand')"></div>
+            <div class="zone-indicator" style="top: 50%; left: 15%; transform: translateX(-50%);">Left Hand</div>
+            
+            <div class="clickable-zone right-hand-zone" onclick="openDetails('rightHand')"></div>
+            <div class="zone-indicator" style="top: 50%; right: 15%; transform: translateX(50%);">Right Hand</div>
+        </div>
+    </div>
+
+    <!-- Details Modal -->
+    <div class="details-modal" id="detailsModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title" id="modalTitle">Details</h2>
+                <button class="close-btn" onclick="closeDetails()">&times;</button>
+            </div>
+            <div class="modal-body" id="modalBody">
+                <!-- Content will be populated by JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Details data for each body part
+        const detailsData = {
+            head: {
+                title: "The Narrator's Understanding of the world",
+                content: `
+                    <p>The narrator is becoming <b>skeptical</b> of things he would once have believed to be true without question. As an example, he is beginning to understand that Santa Claus is not real. This is shown by quotes like:</p>
+                    
+                    <ul>
+                        <li><blockquote>"It is true that at my age I no longer really believe in him yet I have hoped in all his possibilities as fiercely as I can; …"</blockquote> This quote acknowledges that the narrator no longer believes in Santa Claus <li>
+                        <li><blockquote>"Every man moves on," says my father quietly, and I think he speaks of Santa Claus, "but there is no need to grieve. He leaves good things behind."</blockquote>In this quote, the narrator's father recognizes the narrator's diminishing belief in Santa.<li>
+                    </ul>
+                `
+            },
+            heart: {
+                title: "The Narrator's Feelings",
+                content: `
+                    <p>The narrator is <b>nostalgic</b>. He is remembering the times he used to believe in Santa Claus, and is regretting that he does not believe in him anymore. This is shown by many quotes, such as:</p>
+                    
+                    <ul>
+                        <li><blockquote>"I am troubled myself about the nature of Santa Claus and I am trying to hang on to him any way that I can."</blockquote></li>
+                        <li><blockquote>"Yet I am not so much surprised as touched by a pang of loss at being here on the adult side of the world."</blockquote>This quote demonstrates that the author feels a "pang of loss" at not believing in Santa anymore ("Being on the adult side of the world")</li>
+                    </ul>
+                `
+            },
+            leftHand: {
+                title: "The Narrator's Actions",
+                content: `
+                    <p>The narrator is a <b>loving</b> person who loves and is loved by his family. Quotes like those below illustrate this trait.</p>
+                    
+                    <ul>
+                        <li><blockquote>"…we pounce upon our brother physically and verbally"</blockquote>This quote illustrates the narrator's attachment to his brother</li>
+                        <li><blockquote>"Our parents wave to us from the doorway."</blockquote>This quote showcases the narrator's great relationship with his parents</li>
+                    </ul>
+                `
+            },
+            rightHand: {
+                title: "The Narrator's Actions",
+                content: `
+                    <p>The narrator is a <b>loving</b> person who loves and is loved by his family. Quotes like those below illustrate this trait.</p>
+                    
+                    <ul>
+                        <li><blockquote>"…we pounce upon our brother physically and verbally"</blockquote>This quote illustrates the narrator's attachment to his brother</li>
+                        <li><blockquote>"Our parents wave to us from the doorway."</blockquote>This quote showcases the narrator's great relationship with his parents</li>
+                    </ul>
+                `
+            },
+        };
+
+        function openDetails(bodyPart) {
+            const modal = document.getElementById('detailsModal');
+            const title = document.getElementById('modalTitle');
+            const body = document.getElementById('modalBody');
+            
+            const data = detailsData[bodyPart];
+            title.textContent = data.title;
+            
+            // Set HTML content directly
+            body.innerHTML = data.content;
+            
+            modal.style.display = 'block';
+            document.body.style.overflow = 'hidden'; // Prevent background scrolling
+        }
+
+        function closeDetails() {
+            const modal = document.getElementById('detailsModal');
+            modal.style.display = 'none';
+            document.body.style.overflow = 'auto'; // Restore scrolling
+        }
+
+        // Close modal when clicking outside of it
+        window.onclick = function(event) {
+            const modal = document.getElementById('detailsModal');
+            if (event.target === modal) {
+                closeDetails();
+            }
+        }
+
+        // Close modal with Escape key
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                closeDetails();
+            }
+        });
+
+        // Handle image loading errors gracefully
+        document.querySelectorAll('img').forEach(img => {
+            img.addEventListener('error', function() {
+                console.log(`Image not found: ${this.src}`);
+                if (this.classList.contains('person-image')) {
+                    this.style.display = 'none';
+                    document.querySelector('.diagram-container').innerHTML += 
+                        '<div style="width: 300px; height: 400px; background: #f0f0f0; border: 2px dashed #ccc; display: flex; align-items: center; justify-content: center; font-size: 14px; color: #666;">Person image (person.jpg) not found</div>';
+                }
+            });
+        });
+    </script>
+</body>
+</html>
